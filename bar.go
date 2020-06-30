@@ -143,7 +143,13 @@ func (b *Bar) Interruptf(format string, s ...interface{}) {
 
 // InterruptInOneLine prints s above the bar in one line
 func (b *Bar) InterruptInOneLine(s string) {
-	b.Interrupt("\033[F" + s)
+	if b.closed {
+		return
+	}
+	fmt.Println("\033[F")
+	b.output.ClearLine()
+	fmt.Println(s)
+	b.write()
 }
 
 // InterruptfInOneLine passes the given input to fmt.Sprintf and prints
