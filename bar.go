@@ -146,7 +146,7 @@ func (b *Bar) InterruptInOneLine(s string) {
 	if b.closed {
 		return
 	}
-	fmt.Println("\033[F")
+	fmt.Print("\033[F")
 	b.output.ClearLine()
 	fmt.Println(s)
 	b.write()
