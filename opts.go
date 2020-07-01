@@ -10,7 +10,7 @@ import (
 )
 
 type barOpts struct {
-	total, width               int
+	total, width, lines        int
 	start, end                 string
 	complete, head, incomplete string
 	formatString               string
@@ -84,6 +84,8 @@ func NewWithOpts(opts ...func(o *barOpts)) *Bar {
 		output:       o.output,
 		context:      o.context,
 		debug:        o.debug,
+		lines:        o.lines,
+		buffer:       []string{},
 	}
 }
 
@@ -151,5 +153,12 @@ func WithContext(ctx Context) augment {
 func WithDebug() augment {
 	return func(o *barOpts) {
 		o.debug = true
+	}
+}
+
+// WithLines augments an options constructor by setting a lines
+func WithLines(lines int) augment {
+	return func(o *barOpts) {
+		o.lines = lines
 	}
 }

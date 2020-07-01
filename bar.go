@@ -25,6 +25,8 @@ type Bar struct {
 	callback                   func()
 	output                     Output
 	debug                      bool
+	buffer                     []string
+	lines                      int
 }
 
 // ContextValue is a tuple that defines a substitution for a custom verb
@@ -73,6 +75,8 @@ func New(t int) *Bar {
 		format:       tokenize(defaultFormat, []string{}),
 		callback:     noop,
 		output:       &stdout{},
+		buffer:       []string{},
+		lines:        0,
 	}
 }
 
@@ -124,38 +128,41 @@ func (b *Bar) Done() {
 	b.callback()
 }
 
-// Interrupt prints s above the bar
-func (b *Bar) Interrupt(s string) {
-	if b.closed {
-		return
-	}
-
-	b.output.ClearLine()
-	fmt.Println(s)
-	b.write()
-}
-
 // Interruptf passes the given input to fmt.Sprintf and prints
 // it above the bar
 func (b *Bar) Interruptf(format string, s ...interface{}) {
 	b.Interrupt(fmt.Sprintf(format, s...))
 }
 
-// InterruptInOneLine prints s above the bar in one line
-func (b *Bar) InterruptInOneLine(s string) {
+// Interrupt prints s above the bar
+func (b *Bar) Interrupt(s string) {
 	if b.closed {
 		return
 	}
-	fmt.Print("\033[F")
+	if b.lines == 0 {
+		b.output.ClearLine()
+		fmt.Println(s)
+		b.write()
+		return
+	}
+	if len(b.buffer) == b.lines {
+		for i := 0; i < b.lines; i++ {
+			fmt.Print("\033[F")
+		}
+		for i := 0; i < b.lines; i++ {
+			b.output.ClearLine()
+			if i != b.lines-1 {
+				b.buffer[i] = b.buffer[i+1]
+				fmt.Println(b.buffer[i])
+			}
+		}
+		b.buffer[len(b.buffer)-1] = s
+	} else {
+		b.buffer = append(b.buffer, s)
+	}
 	b.output.ClearLine()
 	fmt.Println(s)
 	b.write()
-}
-
-// InterruptfInOneLine passes the given input to fmt.Sprintf and prints
-// it above the bar in one line
-func (b *Bar) InterruptfInOneLine(format string, s ...interface{}) {
-	b.InterruptInOneLine(fmt.Sprintf(format, s...))
 }
 
 func (b *Bar) write() {

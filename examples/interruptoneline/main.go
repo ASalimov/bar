@@ -2,24 +2,33 @@ package main
 
 import (
 	"fmt"
+	"github.com/ASalimov/bar"
+	"github.com/ttacon/chalk"
 	"time"
-
-	"github.com/superhawk610/bar"
 )
 
 func main() {
 	n := 20
-	b := bar.New(30)
+	b := bar.NewWithOpts(bar.WithDimensions(100, 100),
+		bar.WithFormat(
+			fmt.Sprintf(
+				" %sbuilding...%s :percent :bar %s:eta %s ",
+				chalk.Blue,
+				chalk.Reset,
+				chalk.Green,
+				chalk.Reset)))
 
 	fmt.Println()
 	fmt.Println()
 
-	for i := 0; i < n; i++ {
+	for i := 1; i < n; i++ {
 		b.Tick()
-		if i%2 == 0 {
-			b.InterruptfInOneLine("%d is even!", i)
+		l := i
+		if l > 5 {
+			l = 5
 		}
-		time.Sleep(500 * time.Millisecond)
+		b.Interruptf("%d is even!", i)
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	b.Done()
