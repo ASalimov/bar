@@ -128,6 +128,27 @@ func (b *Bar) Done() {
 	b.callback()
 }
 
+// SetLines
+func (b *Bar) SetLines(lines int) {
+	if len(b.buffer) == b.lines {
+	}
+	for i := 0; i < len(b.buffer); i++ {
+		fmt.Print("\033[F")
+	}
+	for i := 0; i < len(b.buffer); i++ {
+		b.output.ClearLine()
+		if i != len(b.buffer)-1 {
+			b.buffer[i] = b.buffer[i+1]
+			fmt.Println(b.buffer[i])
+		}
+	}
+	b.lines = lines
+}
+
+func (b *Bar) GetLines() int {
+	return b.lines
+}
+
 // Interruptf passes the given input to fmt.Sprintf and prints
 // it above the bar
 func (b *Bar) Interruptf(format string, s ...interface{}) {
