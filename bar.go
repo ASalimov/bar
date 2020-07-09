@@ -120,6 +120,10 @@ func (b *Bar) Update(progress int, ctx Context) {
 	b.write()
 }
 
+func (b *Bar) SetFormat(f string) {
+	b.format = tokenize(f, nil)
+}
+
 // Done finalizes the bar and prints it followed by a new line
 func (b *Bar) Done() {
 	b.closed = true
