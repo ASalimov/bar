@@ -38,6 +38,7 @@ func InitTerminal() {
 
 // ClearLine clears the current line in the terminal
 func ClearLine() {
+
 	fmt.Printf("\r%s\r", clearer)
 }
 

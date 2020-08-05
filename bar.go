@@ -27,6 +27,7 @@ type Bar struct {
 	debug                      bool
 	buffer                     []string
 	lines                      int
+	curPosition                int
 }
 
 // ContextValue is a tuple that defines a substitution for a custom verb
@@ -54,6 +55,7 @@ func Ctx(verb string, value interface{}) *ContextValue {
 	}
 }
 
+const bufferSize = 20
 const defaultFormat = " :bar :percent :rate ops/s "
 
 // New creates a new instance of bar.Bar with the given total and
@@ -134,19 +136,29 @@ func (b *Bar) Done() {
 
 // SetLines
 func (b *Bar) SetLines(lines int) {
-	if len(b.buffer) == b.lines {
-	}
-	for i := 0; i < len(b.buffer); i++ {
+
+	for i := 0; i < lines; i++ {
 		fmt.Print("\033[F")
 	}
-	for i := 0; i < len(b.buffer); i++ {
-		b.output.ClearLine()
-		if i != len(b.buffer)-1 {
-			b.buffer[i] = b.buffer[i+1]
+	if b.curPosition > 0 {
+		for i := b.curPosition; i >= 0; i-- {
+			b.output.ClearLine()
+			for {
+				if len(b.buffer) < i+1 {
+					b.buffer = append(b.buffer, "")
+				} else {
+					break
+				}
+			}
+
 			fmt.Println(b.buffer[i])
 		}
 	}
+
+	b.curPosition = b.curPosition + (lines - b.lines)
+	//b.output.ClearLine()\
 	b.lines = lines
+	b.write()
 }
 
 func (b *Bar) GetLines() int {
@@ -170,21 +182,28 @@ func (b *Bar) Interrupt(s string) {
 		b.write()
 		return
 	}
-	if len(b.buffer) == b.lines {
+	if b.curPosition == b.lines {
 		for i := 0; i < b.lines; i++ {
 			fmt.Print("\033[F")
 		}
-		for i := 0; i < b.lines; i++ {
-			b.output.ClearLine()
-			if i != b.lines-1 {
-				b.buffer[i] = b.buffer[i+1]
-				fmt.Println(b.buffer[i])
-			}
+		if len(b.buffer) < bufferSize {
+			b.buffer = append(b.buffer, b.buffer[len(b.buffer)-1])
 		}
-		b.buffer[len(b.buffer)-1] = s
+		for i := len(b.buffer) - 2; i >= 0; i-- {
+			b.buffer[i+1] = b.buffer[i]
+		}
+		for i := b.lines - 1; i > 0; i-- {
+			b.output.ClearLine()
+			fmt.Println(b.buffer[i])
+		}
 	} else {
-		b.buffer = append(b.buffer, s)
+		b.curPosition++
+		b.buffer = append(b.buffer, "")
+		for i := len(b.buffer) - 2; i >= 0; i-- {
+			b.buffer[i+1] = b.buffer[i]
+		}
 	}
+	b.buffer[0] = s
 	b.output.ClearLine()
 	fmt.Println(s)
 	b.write()

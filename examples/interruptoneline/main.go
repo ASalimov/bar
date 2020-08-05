@@ -5,14 +5,15 @@ import (
 	"github.com/ASalimov/bar"
 	"github.com/ttacon/chalk"
 	"os"
+	"strings"
 	"time"
 )
 
 func main() {
-	n := 50
+	bar.InitTerminal()
 	ch := make(chan string)
 	b := bar.NewWithOpts(bar.WithDimensions(100, 100),
-		bar.WithLines(5),
+		bar.WithLines(2),
 		bar.WithFormat(
 			fmt.Sprintf(
 				" %sbuilding...%s :percent :bar %s:eta %s ",
@@ -24,8 +25,9 @@ func main() {
 	fmt.Println()
 	fmt.Println()
 	listen_keys(ch)
-	for i := 1; i < n; i++ {
-		b.Tick()
+	i := 1
+	for {
+		//b.Tick()
 		l := i
 		if l > 5 {
 			l = 5
@@ -35,13 +37,17 @@ func main() {
 			//fmt.Println("Keys pressed:", []byte(stdin))
 			if []byte(stdin)[0] == 10 {
 				b.SetLines(b.GetLines() + 1)
+				//time.Sleep(3000 * time.Millisecond)
+			} else {
 			}
-			b.Interruptf("%d is even!", i)
-		default:
-			b.Interruptf("%d is even!", i)
+			//time.Sleep(1000 * time.Millisecond)
+			//time.Sleep(5000 * time.Millisecond)
+			//b.Interruptf("%d is even!", i)
+		case <-time.After(200 * time.Millisecond):
+			b.Interruptf("%d is even!"+strings.Repeat(".", int(100)-i), i)
+			i++
 		}
 
-		time.Sleep(900 * time.Millisecond)
 	}
 
 	b.Done()
